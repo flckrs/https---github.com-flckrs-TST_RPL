@@ -8,6 +8,8 @@ fastapi = "*"
 uvicorn = "*"
 gunicorn = "*"
 heroku = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
