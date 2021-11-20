@@ -7,16 +7,6 @@ import models
 
 app = FastAPI()
 
-class Item(BaseModel):
-  id: int
-  name: str
-  description:str
-  price: int
-  on_offer: bool
-  
-  class Config:       #serialize sql algorithm to json
-    orm_mode=True     #tadi error karena orm_mod, harusnya orm_mode
-
 class Supply(BaseModel):
   id_supply: int
   nama_produk: str
@@ -42,7 +32,7 @@ def get_all_products():
   return supply
 
 # Read One Product
-@app.get('/supply/{product_id}',response_model=Item,status_code=status.HTTP_200_OK)
+@app.get('/supply/{product_id}',response_model=Supply,status_code=status.HTTP_200_OK)
 def get_a_product(product_id:int):
     supply=db.query(models.Supply).filter(models.Supply.id_supply==product_id).first()
     if supply is not None:
