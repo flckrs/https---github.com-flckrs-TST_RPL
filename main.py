@@ -7,12 +7,6 @@ import models
 
 app = FastAPI()
 
-# Login (Login tinggal ambil)
-# Post Data Supply (Post)
-# Delete Data Supply (Delete)
-# Edit Data Supply (Put)
-# Read Data Supply (Get One/All)
-
 class Item(BaseModel):
   id: int
   name: str
@@ -23,72 +17,85 @@ class Item(BaseModel):
   class Config:       #serialize sql algorithm to json
     orm_mode=True     #tadi error karena orm_mod, harusnya orm_mode
 
+class Supply(BaseModel):
+  id_supply: int
+  nama_produk: str
+  jumlah: int
+  deskripsi: str
+  jenis: str
+  status: bool
+
+  class Config:
+    orm_mode=True
+
 db = SessionLocal()
 
 @app.get('/')
 def index(): 
   return {"Welcome":"Hello :p"}
 
-# Read All Items
-@app.get('/items', response_model=List[Item], status_code=200)
-def get_all_items():
-  items=db.query(models.Item).all()
+# Read All Products
+@app.get('/supply', response_model=List[Supply], status_code=200)
+def get_all_products():
+  supply=db.query(models.Supply).all()
 
-  return items
+  return supply
 
-@app.get('/items',response_model=List[Item],status_code=200)
-def get_all_items():
-    items=db.query(models.Item).all()
+# Read One Product
+@app.get('/supply/{product_id}',response_model=Item,status_code=status.HTTP_200_OK)
+def get_a_product(product_id:int):
+    supply=db.query(models.Supply).filter(models.Supply.id_supply==product_id).first()
+    if supply is not None:
+      return supply
+    raise HTTPException(status_code=404, detail="Product Not Found")
 
-    return items
+# Add New Product
+@app.post('/supply',response_model=Supply, status_code=status.HTTP_201_CREATED)
+def add_new_product(supply:Supply):
+    db_supply=db.query(models.Supply).filter(models.Supply.id_supply==supply.id_supply).first()
 
-@app.get('/item/{item_id}',response_model=Item,status_code=status.HTTP_200_OK)
-def get_an_item(item_id:int):
-    item=db.query(models.Item).filter(models.Item.id==item_id).first()
-    if item is not None:
-      return item
-    raise HTTPException(status_code=404, detail="Item Not Found")
+    if db_supply is not None:
+        raise HTTPException(status_code=400,detail="Product already exists")
 
-@app.post('/items',response_model=Item, status_code=status.HTTP_201_CREATED)
-def create_an_item(item:Item):
-    db_item=db.query(models.Item).filter(models.Item.id==item.id).first()
-
-    if db_item is not None:
-        raise HTTPException(status_code=400,detail="Item already exists")
-
-    new_item=models.Item(
-        name=item.name,
-        price=item.price,
-        description=item.description,
-        on_offer=item.on_offer
+    new_supply=models.Supply(
+        id_supply=supply.id_supply,
+        nama_produk=supply.nama_produk,
+        jumlah=supply.jumlah,
+        deskripsi=supply.deskripsi,
+        jenis=supply.jenis,
+        status=supply.status
     )
 
-    db.add(new_item)
+    db.add(new_supply)
     db.commit()
 
-    return new_item
+    return new_supply
 
-@app.put('/item/{item_id}',response_model=Item,status_code=status.HTTP_200_OK)
-def update_an_item(item_id:int,item:Item):
-  
-    item_to_update=db.query(models.Item).filter(models.Item.id==item_id).first()
-    item_to_update.name=item.name
-    item_to_update.price=item.price
-    item_to_update.description=item.description
-    item_to_update.on_offer=item.on_offer
+# Update A Product
+@app.put('/supply/{supply_id}',response_model=Supply,status_code=status.HTTP_200_OK)
+def update_a_product(supply_id:int,supply:Supply):
+
+    product_to_update=db.query(models.Supply).filter(models.Supply.id_supply==supply.id_supply).first()
+
+    product_to_update.nama_produk=supply.nama_produk
+    product_to_update.jumlah=supply.jumlah
+    product_to_update.deskripsi=supply.deskripsi
+    product_to_update.jenis=supply.jenis
+    product_to_update.status=supply.status
 
     db.commit()
 
-    return item_to_update
+    return product_to_update
 
-@app.delete('/item/{item_id}')
-def delete_item(item_id:int):
-    item_to_delete=db.query(models.Item).filter(models.Item.id==item_id).first()
+# Delete One Product
+@app.delete('/supply/{supply_id}')
+def delete_product(supply_id:int):
+    product_to_delete=db.query(models.Supply).filter(models.Supply.id_supply==supply_id).first()
 
-    if item_to_delete is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Item Not Found")
+    if product_to_delete is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Product Not Found")
     
-    db.delete(item_to_delete)
+    db.delete(product_to_delete)
     db.commit()
 
-    return item_to_delete
+    return ("Produk " + product_to_delete.nama_produk +" sudah terhapus dari database")

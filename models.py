@@ -1,13 +1,14 @@
 from database import Base
 from sqlalchemy import String, Boolean, Integer, Column, Text
 
-class Item(Base):
-  __tablename__='items'
-  id= Column(Integer, primary_key=True)
-  name= Column(String(255), nullable= False, unique=True)
-  description= Column(Text)
-  price=Column(Integer, nullable=False)
-  on_offer=Column(Boolean, default=False)
+class Supply(Base):
+  __tablename__='supply'
+  id_supply= Column(Integer, nullable= False, primary_key= True)
+  nama_produk= Column(String(255), nullable= False)
+  jumlah= Column(Integer, nullable= False)
+  deskripsi= Column(Text)
+  jenis= Column(String(255), nullable=False)
+  status=Column(Boolean, default=False)
 
   def __repr__(self):
-    return f"<Item name={self.name} price={self.price}>"
+    return f"<Supply ID= {self.id_supply} Supply name={self.nama_produk}>"
